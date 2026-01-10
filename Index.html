@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Infinito | Osiel & Mikaelle</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@200;400;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root { --accent: #fff; --text: #e5e5e5; --bg: #000; }
+    * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      cursor: crosshair;
+    }
+
+    /* Efeito de Grão de Filme */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url('https://grainy-gradients.vercel.app/noise.svg');
+      opacity: 0.04;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* Background Fixo e Partículas */
+    .bg-fixed {
+      position: fixed; inset: 0;
+      background: url('background.jpg') center/cover no-repeat;
+      filter: blur(10px) brightness(0.18);
+      z-index: -2;
+      transform: scale(1.05);
+    }
+    #particles-js { position: fixed; inset: 0; z-index: -1; }
+
+    /* Overlay de Entrada */
+    #overlay {
+      position: fixed; inset: 0; background: #000; z-index: 5000;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: 2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Seções e Containers */
+    section { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 100px 20px; position: relative; }
+    
+    .container { max-width: 850px; opacity: 0; transform: translateY(30px); transition: 1.8s; text-align: center; }
+    .container.show { opacity: 1; transform: translateY(0); }
+
+    h1, h2 { font-family: 'Playfair Display', serif; color: #fff; }
+    h1 { font-size: clamp(2.5rem, 7vw, 4.5rem); margin-bottom: 20px; }
+    h2 { font-size: clamp(1.8rem, 5vw, 2.5rem); margin-bottom: 30px; }
+
+    /* Citações e Autores */
+    .quote { font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(1.1rem, 3vw, 1.5rem); line-height: 1.6; margin: 40px 0; color: #ccc; }
+    .author { font-size: 0.75rem; letter-spacing: 3px; text-transform: uppercase; color: #777; display: block; margin-top: 15px; }
+
+    /* Contador */
+    #counter { display: flex; gap: 20px; justify-content: center; margin-top: 40px; }
+    .count-box { text-align: center; min-width: 70px; }
+    .count-box span { display: block; font-size: 2rem; font-weight: 200; color: #fff; }
+    .count-box label { font-size: 0.6rem; text-transform: uppercase; opacity: 0.5; letter-spacing: 1px; }
+
+    /* Timeline Vertical */
+    .timeline { border-left: 1px solid rgba(255,255,255,0.1); margin: 60px 0; padding-left: 30px; text-align: left; position: relative; }
+    .t-item { margin-bottom: 60px; position: relative; }
+    .t-item::before { content: ""; position: absolute; left: -35.5px; top: 10px; width: 10px; height: 10px; background: #fff; border-radius: 50%; }
+
+    /* Glitch Effect */
+    .glitch { font-weight: bold; position: relative; color: #fff; display: inline-block; }
+    .glitch::after { content: attr(data-text); position: absolute; left: 2px; text-shadow: -1px 0 #ff00c1; top: 0; opacity: 0.7; animation: noise 2.5s infinite linear alternate-reverse; }
+    @keyframes noise { 0% { clip: rect(10px, 999px, 20px, 0); } 100% { clip: rect(40px, 999px, 60px, 0); } }
+
+    /* Imagens Secretas (Hover) */
+    .secret { color: #fff; border-bottom: 1px dotted #555; cursor: help; position: relative; }
+    .secret img { position: absolute; bottom: 150%; left: 50%; transform: translateX(-50%) scale(0.8); width: 200px; border-radius: 8px; opacity: 0; pointer-events: none; transition: 0.5s; box-shadow: 0 10px 40px #000; }
+    .secret:hover img { opacity: 1; transform: translateX(-50%) scale(1); }
+
+    /* Chat Pops (Fragmentos de Conversa) */
+    .chat-pop { position: absolute; background: rgba(255,255,255,0.03); padding: 12px 20px; border-radius: 20px; font-size: 0.8rem; border: 1px solid rgba(255,255,255,0.08); backdrop-filter: blur(4px); opacity: 0; transition: 1.5s; z-index: 5; }
+    .chat-pop.show { opacity: 0.5; }
+
+    /* Inputs e Botões */
+    button { background: none; border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 18px 45px; cursor: pointer; transition: 0.5s; letter-spacing: 3px; text-transform: uppercase; font-size: 0.7rem; margin-top: 20px; }
+    button:hover { background: #fff; color: #000; box-shadow: 0 0 30px rgba(255,255,255,0.2); }
+    input { background: rgba(255,255,255,0.02); border: 1px solid #333; color: #fff; padding: 15px; text-align: center; width: 250px; margin-bottom: 10px; }
+
+    #carta { display: none; text-align: left; background: rgba(255,255,255,0.02); padding: 40px; border-left: 1px solid #fff; line-height: 2.2; margin-top: 30px; font-weight: 300; }
+
+    .blackout { position: fixed; inset: 0; background: #000; z-index: 4000; display: none; align-items: center; justify-content: center; text-align: center; }
+  </style>
+</head>
+<body>
+
+  <div id="overlay">
+    <p style="letter-spacing: 5px; opacity: 0.5; margin-bottom: 10px; font-size: 0.7rem;">OSIEL APRESENTA</p>
+    <h2 style="font-family: 'Playfair Display'; font-weight: 400; margin-bottom: 40px; font-style: italic;">"O amor é o caos em repouso."</h2>
+    <button onclick="comecar()">Abrir nosso mundo</button>
+  </div>
+
+  <div class="bg-fixed"></div>
+  <div id="particles-js"></div>
+
+  <audio id="music" loop><source src="musica.mp3" type="audio/mpeg"></audio>
+  <audio id="heartbeat"><source src="https://www.soundjay.com/human/heartbeat-01.mp3" type="audio/mpeg"></audio>
+
+  <section>
+    <div class="chat-pop" style="top: 20%; left: 10%;">"Oi, tudo bem?"</div>
+    <div class="chat-pop" style="top: 15%; right: 15%;">"Qual sua cor favorita?"</div>
+    <div class="container">
+      <p style="text-transform: uppercase; letter-spacing: 5px; font-size: 0.7rem; margin-bottom: 20px; opacity: 0.6;">Desde 26 de Dezembro de 2024</p>
+      <h1>Mikaelle & Osiel</h1>
+      <div id="counter">
+        <div class="count-box"><span id="days">00</span><label>Dias</label></div>
+        <div class="count-box"><span id="hours">00</span><label>Horas</label></div>
+        <div class="count-box"><span id="mins">00</span><label>Minutos</label></div>
+      </div>
+      <div class="quote" style="margin-top: 60px;">
+        "Para o mundo você pode ser apenas uma pessoa, mas para uma pessoa você pode ser o mundo."
+        <span class="author">— Antoine de Saint-Exupéry</span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="chat-pop" style="bottom: 10%; right: 10%;">"Me passa seu WhatsApp?"</div>
+    <div class="container">
+      <h2 style="text-align: left;">Onde os fios se cruzaram</h2>
+      <div class="timeline">
+        <div class="t-item">
+          <h3 class="glitch" data-text="Plataforma Weplay">Plataforma Weplay</h3>
+          <p>Tudo começou como um jogo. Entre salas e rodadas de <strong>Espião</strong>, eu encontrei alguém que jogava de um jeito diferente e que, sem saber, já estava ganhando meu coração.</p>
+        </div>
+        <div class="t-item">
+          <h3>O Salto de Fé</h3>
+          <p>O jogo ficou pequeno. Quando a nossa voz substituiu o chat do Weplay, o "gostar" virou algo real, palpável e essencial.</p>
+        </div>
+        <div class="t-item">
+          <h3>O Compromisso</h3>
+          <p>No dia 26/12/2024, casamos virtualmente. Um marco que diz: eu escolho você, em qualquer realidade.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="quote">
+        "Duda de que el sol se mueva, duda de que las estrellas son fuego... pero nunca dudes de que te amo."
+        <span class="author">— William Shakespeare</span>
+      </div>
+      <p>Você é o meu <span class="secret">lugar seguro<img src="foto_paz.jpg"></span> no meio de toda essa bagunça.</p>
+      <p>Eu erro, eu falho e às vezes me perco, mas o seu sorriso é o que me traz de <span class="secret">volta.<img src="foto_sorriso.jpg"></span></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <h2>As Palavras Guardadas</h2>
+      <p style="opacity: 0.5; font-size: 0.8rem; margin-bottom: 20px;">Insira a data do nosso casamento para ler (DD/MM/AAAA)</p>
+      <input id="senha" type="text" placeholder="26/12/2024" maxlength="10">
+      <br>
+      <button onclick="abrirCarta()">Desbloquear Sentimento</button>
+
+      <div id="carta">
+        <strong>Mikaelle,</strong><br><br>
+        Escrevo isso para que você nunca esqueça: o acaso nos apresentou no Weplay, mas a minha vontade de te ver feliz é o que me faz ficar todos os dias.<br><br>
+        Obrigado por ser minha melhor jogada, minha melhor conversa e meu melhor destino.<br><br>
+        Eu te amo pelo que você é e pelo que nos tornamos juntos.<br><br>
+        — Para sempre seu, Osiel.
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <div class="quote">
+        "Tão bom morrer de amor e continuar vivendo."
+        <span class="author">— Mario Quintana</span>
+      </div>
+      <p style="margin-bottom: 40px; opacity: 0.7;">Não é apenas uma página. É uma promessa.</p>
+      <button onclick="encerrar()">Encerrar Jornada</button>
+    </div>
+  </section>
+
+  <div class="blackout" id="blackout">
+    <div class="container show">
+      <h2 style="font-style: italic; font-size: 2.5rem;">Te amo, Mikaelle.</h2>
+      <p style="opacity: 0.5; margin-top: 20px;">Obrigado por caminhar comigo.</p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <script>
+    const music = document.getElementById('music');
+    const hb = document.getElementById('heartbeat');
+
+    // Inicializar Partículas
+    particlesJS("particles-js", {
+      "particles": {
+        "number": { "value": 60 },
+        "color": { "value": "#ffffff" },
+        "opacity": { "value": 0.1, "random": true },
+        "size": { "value": 2 },
+        "move": { "enable": true, "speed": 0.5, "direction": "top" }
+      }
+    });
+
+    // Contador de Tempo
+    function updateCounter() {
+      const start = new Date("2024-12-26T00:00:00");
+      const now = new Date();
+      const diff = now - start;
+      document.getElementById('days').innerText = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
+      document.getElementById('hours').innerText = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+      document.getElementById('mins').innerText = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
+    }
+    setInterval(updateCounter, 1000);
+    updateCounter();
+
+    // Iniciar Experiência
+    function comecar() {
+      document.getElementById('overlay').style.opacity = '0';
+      setTimeout(() => document.getElementById('overlay').style.display = 'none', 2000);
+      
+      music.volume = 0;
+      music.play();
+      let v = 0;
+      let f = setInterval(() => {
+        if(v < 0.3) { v += 0.01; music.volume = v; } 
+        else clearInterval(f);
+      }, 200);
+    }
+
+    // Observer para Animações
+    const obs = new IntersectionObserver(es => {
+      es.forEach(e => { 
+        if(e.isIntersecting) {
+          e.target.classList.add('show');
+          e.target.querySelectorAll('.chat-pop').forEach(p => p.classList.add('show'));
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.container, section').forEach(c => obs.observe(c));
+
+    // Desbloquear Carta
+    function abrirCarta() {
+      const s = document.getElementById('senha').value;
+      if(s === '26/12/2024') {
+        setTimeout(() => {
+          document.getElementById('carta').style.display = 'block';
+          music.play();
+          window.scrollBy({ top: 350, behavior: 'smooth' });
+        }, 2200);
+      } else {
+        alert("A chave é a data do nosso sim virtual.");
+      }
+    }
+
+    // Finalizar
+    function encerrar() {
+      document.getElementById('blackout').style.display = 'flex';
+      let v = music.volume;
+      let f = setInterval(() => {
+        if(v > 0.01) { v -= 0.01; music.volume = v; }
+        else { music.pause(); clearInterval(f); }
+      }, 100);
+    }
+
+    console.log("%cEi Mikaelle, ele te ama muito. ❤️", "color: #fff; background: #000; padding: 10px; border-radius: 5px;");
+  </script>
+</body>
+</html>
+
